@@ -1,0 +1,36 @@
+# Kotlin/Gradle specific files
+build/
+/build/
+.idea/
+*.iml
+*.ipr
+*.iws
+.kotlin
+
+# Gradle files
+gradle/
+gradlew
+gradlew.bat
+.gradle
+
+# Node.js
+node_modules/
+package-lock.json
+package.json
+
+
+# Compiled Kotlin files
+*.class
+*.jar
+
+# Local configuration file (sdk.dir)
+local.properties
+
+# VS Code configs
+.vscode/
+
+# Others
+bin/
+out/
+
+*.bkp

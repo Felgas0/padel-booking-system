@@ -1,0 +1,102 @@
+
+// ########################################################
+@baseUrl = http://localhost:8080
+@authToken = 00000000-0000-0000-0000-000000000001
+// ########################################################
+
+
+### GET ALL USERS
+GET {{baseUrl}}/users
+
+### GET ALL USERS
+GET {{baseUrl}}/users?skip=0&limit=10
+
+### GET ALL USERS
+GET {{baseUrl}}/users?skip=1&limit=3
+
+
+
+### CREATE A MOCK USER_B
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Mock User_B",
+  "email": "mockuser_B@gmail.com"
+}
+
+### CREATE A MOCK USER_C
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Mock User_C",
+  "email": "mockuser_C@gmail.com"
+}
+
+
+### Get specific user
+GET {{baseUrl}}/users/1
+//replace this with the token obtained from creating a user
+
+### GET INSERTED USER
+GET {{baseUrl}}/users/2
+
+
+
+
+
+
+### CREATE A CLUB
+POST {{baseUrl}}/clubs
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "name": "Tenis ISEL 2"
+}
+
+### CREATE A CLUB FOR LUIS (POSTGRES_DB)
+POST {{baseUrl}}/clubs
+Content-Type: application/json
+Authorization: 49698b60-12ca-4df7-8950-d783124f5fa0
+
+{
+  "name": "Tenis ISEL2"
+}
+
+
+### GET CLUB DETAILS
+GET {{baseUrl}}/clubs/1
+
+
+### GET ALL CLUBS
+GET {{baseUrl}}/clubs
+
+
+### Create a new court in a club
+POST {{baseUrl}}/courts
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "name": "Center Court3",
+  "clubId": "1"
+}
+
+### CREATE A COURT IN LUIS'S CLUB (POSTGRES_DB)
+POST {{baseUrl}}/courts
+Content-Type: application/json
+Authorization: 49698b60-12ca-4df7-8950-d783124f5fa0
+
+{
+  "name": "Luis court PostgresDB",
+  "clubId": "1"
+}
+
+
+### Get details of a specific court
+GET {{baseUrl}}/courts/1
+
+### Get all courts for a specific club
+GET {{baseUrl}}/clubs/1/courts

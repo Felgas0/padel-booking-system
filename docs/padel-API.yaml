@@ -1,0 +1,901 @@
+openapi: 3.0.4
+info:
+  title: Padel Court Management API
+  description: 'API for managing padel users, clubs, courts, and rentals'
+  version: 1.0.12
+servers:
+  - url: "http://localhost:8080"
+tags:
+  - name: Users
+    description: Everything about the Users
+  - name: Clubs
+    description: Everything about Padel Clubs
+  - name: Courts
+    description: Everything about Padel Courts
+  - name: Rentals
+    description: Everything about Renting a Padel Court
+
+paths:
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      description: Registers a new user in the system
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid user data
+        '409':
+          description: User already exists
+        '500':
+          description: Internal server error
+    get:
+      tags:
+        - Users
+      summary: Lists all users
+      description: Returns a paginated list of all users in the system
+      operationId: getAllUsers
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of users to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of users to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of users
+                  offset:
+                    type: integer
+                    description: Current offset
+                  limit:
+                    type: integer
+                    description: Current limit
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '500':
+          description: Internal server error
+
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Get user details
+      description: Returns detailed information about a specific user
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+
+  /users/login:
+    post:
+      tags:
+        - Users
+      summary: Authenticate a user
+      description: Validates user credentials and returns a token
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Missing or invalid credentials
+        '401':
+          description: Name or password invalid
+        '500':
+          description: Internal server error
+
+  /clubs:
+    post:
+      tags:
+        - Clubs
+      summary: Create a Padel Club
+      description: Creates a new padel club in the system
+      operationId: createClub
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClubCreateRequest'
+      responses:
+        '201':
+          description: Club created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClubResponse'
+        '400':
+          description: Invalid club data
+        '500':
+          description: Internal server error
+    get:
+      tags:
+        - Clubs
+      summary: Get a List Of All Padel Clubs
+      description: Returns a paginated list of all padel clubs
+      operationId: getClubs
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of clubs to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of clubs to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of padel clubs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of clubs
+                  offset:
+                    type: integer
+                    description: Current offset
+                  limit:
+                    type: integer
+                    description: Current limit
+                  clubs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Club'
+        '500':
+          description: Internal server error
+
+  /clubs/{clubId}:
+    get:
+      tags:
+        - Clubs
+      summary: Get The Details Of a Club
+      description: Returns detailed information about a specific club
+      operationId: getClubDetails
+      parameters:
+        - name: clubId
+          in: path
+          required: true
+          description: The ID of the club to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Club details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Club'
+        '404':
+          description: Club not found
+        '500':
+          description: Internal server error
+
+  /clubs/{clubId}/courts:
+    get:
+      tags:
+        - Courts
+      summary: Get courts of a specific club
+      description: Returns a list of all courts for a specific club
+      operationId: getClubCourts
+      parameters:
+        - name: clubId
+          in: path
+          required: true
+          description: The ID of the club
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of courts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clubId:
+                    type: integer
+                    description: ID of the club
+                  courts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Court'
+        '404':
+          description: Club not found
+        '500':
+          description: Internal server error
+
+  /courts:
+    post:
+      tags:
+        - Courts
+      summary: Create a Padel Court
+      description: Creates a new court in the system
+      operationId: createCourt
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourtCreate'
+      responses:
+        '201':
+          description: Court created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtResponse'
+        '400':
+          description: Invalid court data
+        '404':
+          description: Club not found
+        '403':
+          description: Not authorized to create a court for this club
+        '500':
+          description: Internal server error
+
+  /courts/{courtId}:
+    get:
+      tags:
+        - Courts
+      summary: Gets Court Details
+      description: Returns detailed information about a specific court
+      operationId: getCourtDetails
+      parameters:
+        - name: courtId
+          in: path
+          required: true
+          description: The ID of the court to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Court details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Court'
+        '404':
+          description: Court not found
+        '500':
+          description: Internal server error
+
+  /rentals:
+    post:
+      tags:
+        - Rentals
+      summary: Creates a Rental
+      description: Creates a new rental for a court
+      operationId: createRental
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentalCreate'
+      responses:
+        '201':
+          description: Rental created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalResponse'
+        '400':
+          description: Invalid request data
+        '404':
+          description: Club or court not found
+        '409':
+          description: Court is already booked for this time
+        '500':
+          description: Internal server error
+
+  /rentals/{rentalId}:
+    get:
+      tags:
+        - Rentals
+      summary: Get details of a rental
+      description: Returns detailed information about a specific rental
+      operationId: getRentalDetails
+      parameters:
+        - name: rentalId
+          in: path
+          required: true
+          description: The ID of the rental to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Rental details obtained successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rental'
+        '404':
+          description: Rental not found
+        '500':
+          description: Internal server error
+
+    delete:
+      tags:
+        - Rentals
+      summary: Delete a rental
+      description: Removes a rental from the system
+      operationId: deleteRental
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: rentalId
+          in: path
+          required: true
+          description: The ID of the rental to delete
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Response indicating if deletion was successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteRentalResponse'
+        '403':
+          description: Not authorized to delete this rental
+        '404':
+          description: Rental not found
+        '500':
+          description: Internal server error
+
+    put:
+      tags:
+        - Rentals
+      summary: Update a rental
+      description: Updates the date and duration of an existing rental
+      operationId: updateRental
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: rentalId
+          in: path
+          required: true
+          description: The ID of the rental to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentalUpdate'
+      responses:
+        '200':
+          description: Rental updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rental'
+        '400':
+          description: Invalid update data
+        '403':
+          description: Not authorized to update this rental
+        '404':
+          description: Rental not found
+        '409':
+          description: Requested time slot is unavailable
+        '500':
+          description: Internal server error
+
+  /clubs/{clubId}/courts/{courtId}/rentals:
+    get:
+      tags:
+        - Rentals
+      summary: Get rentals for a specific court
+      description: Returns a list of rentals for a specific court on a given date
+      operationId: getCourtRentals
+      parameters:
+        - name: clubId
+          in: path
+          description: ID of the club
+          required: true
+          schema:
+            type: integer
+        - name: courtId
+          in: path
+          description: ID of the court
+          required: true
+          schema:
+            type: integer
+        - name: date
+          in: query
+          description: Date for which to retrieve rentals (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of rentals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clubId:
+                    type: integer
+                    description: ID of the club
+                  courtId:
+                    type: integer
+                    description: ID of the court
+                  date:
+                    type: string
+                    format: date
+                    description: Date of the rentals
+                  rentals:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rental'
+        '404':
+          description: Club or court not found
+        '500':
+          description: Internal server error
+
+  /users/{userId}/rentals:
+    get:
+      summary: Get rentals for a specific user
+      description: Returns all rentals associated with a specific user
+      tags:
+        - Rentals
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user whose rentals to retrieve
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: Filter rentals by status
+          required: false
+          schema:
+            type: string
+            enum: [upcoming, past, canceled]
+        - name: startDate
+          in: query
+          description: Filter rentals from this date (inclusive)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: Filter rentals up to this date (inclusive)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          description: Maximum number of rentals to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of rentals to skip for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Rentals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of rentals matching the criteria
+                  offset:
+                    type: integer
+                    description: Current offset
+                  limit:
+                    type: integer
+                    description: Current limit
+                  rentals:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rental'
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+
+  /clubs/{clubId}/courts/{courtId}/available-hours:
+    get:
+      summary: Get available hours to rent a court
+      description: Returns a list of available time slots for renting a specific court on a given date
+      tags:
+        - Rentals
+      parameters:
+        - name: clubId
+          in: path
+          description: Club identifier
+          required: true
+          schema:
+            type: integer
+        - name: courtId
+          in: path
+          description: Court identifier
+          required: true
+          schema:
+            type: integer
+        - name: date
+          in: query
+          description: Date for which to check availability (YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Available hours retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clubId:
+                    type: integer
+                    description: ID of the club
+                  courtId:
+                    type: integer
+                    description: ID of the court
+                  date:
+                    type: string
+                    format: date
+                    description: Date of the availability
+                  courtName:
+                    type: string
+                    description: Name of the court
+                  availableHours:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        startTime:
+                          type: string
+                          format: time
+                          description: Start time of the available slot (HH:MM)
+                        endTime:
+                          type: string
+                          format: time
+                          description: End time of the available slot (HH:MM)
+        '404':
+          description: Club or court not found
+        '500':
+          description: Internal server error
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserCreateRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          description: Full name of the user
+          example: "Ana"
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+          example: "Ana@example.com"
+        password:
+          type: string
+          description: Password for the new user (5–25 chars)
+          example: "s3cr3tPass"
+
+    UserLoginRequest:
+      type: object
+      required:
+        - name
+        - password
+      properties:
+        name:
+          type: string
+          description: Username to authenticate
+          example: "Ana"
+        password:
+          type: string
+          description: Password of the user
+          example: "s3cr3tPass"
+
+    AuthResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier of the authenticated user
+          example: 12345
+        token:
+          type: string
+          description: JWT authentication token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    UserResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          description: Unique identifier for the user
+          example: 12345
+        token:
+          type: string
+          description: Authentication token for the user
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    ClubCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the padel club
+          example: "Padel ISEL"
+
+    ClubResponse:
+      type: object
+      properties:
+        clubId:
+          type: integer
+          description: Unique identifier for the club
+          example: 5678
+
+    CourtCreate:
+      type: object
+      required:
+        - name
+        - clubId
+      properties:
+        name:
+          type: string
+          description: Name or identifier of the court
+          example: "Court 1"
+        clubId:
+          type: integer
+          description: ID of the club this court belongs to
+          example: 5678
+
+    CourtResponse:
+      type: object
+      properties:
+        courtId:
+          type: integer
+          description: Unique identifier for the court
+          example: 9012
+
+    RentalCreate:
+      type: object
+      required:
+        - clubId
+        - courtId
+        - startTime
+        - duration
+      properties:
+        clubId:
+          type: integer
+          description: ID of the club where the court is located
+          example: 5678
+        courtId:
+          type: integer
+          description: ID of the court to rent
+          example: 9012
+        startTime:
+          type: string
+          format: date-time
+          description: Start time of the rental (ISO 8601 format)
+          example: "2025-03-20T14:00:00Z"
+        duration:
+          type: integer
+          description: Duration of the rental in hours
+          example: 2
+
+    RentalResponse:
+      type: object
+      properties:
+        rentalId:
+          type: integer
+          description: Unique identifier for the rental
+          example: 1904
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the user
+          example: 12
+        name:
+          type: string
+          description: Full name of the user
+          example: "João"
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+          example: "Joao@example.com"
+
+    Club:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the club
+          example: 5678
+        name:
+          type: string
+          description: Name of the padel club
+          example: "Padel ISEL"
+        ownerId:
+          type: integer
+          description: ID of the user who owns the club
+          example: 12345
+        courts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Court'
+
+    Court:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the court
+          example: 1904
+        name:
+          type: string
+          description: Name or identifier of the court
+          example: "Court 1"
+        clubId:
+          type: integer
+          description: ID of the club this court belongs to
+          example: 5678
+
+    Rental:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the rental
+          example: 3456
+        startTime:
+          type: string
+          format: date-time
+          description: Start time of the rental
+          example: "2025-03-20T14:00:00Z"
+        duration:
+          type: integer
+          description: Duration of the rental in hours
+          example: 2
+        userId:
+          type: integer
+          description: ID of the user who made the rental
+          example: 12345
+        clubId:
+          type: integer
+          description: ID of the club where the court is located
+          example: 5678
+
+    DeleteRentalResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Whether the deletion was successful
+          example: true
+        message:
+          type: string
+          description: Information about the deletion result
+          example: "Rental 123 successfully deleted"
+
+    RentalUpdate:
+      type: object
+      required:
+        - date
+        - duration
+      properties:
+        date:
+          type: string
+          format: date-time
+          description: New date for the rental (ISO 8601 format)
+          example: "2025-04-15T16:00:00Z"
+        duration:
+          type: integer
+          description: New duration for the rental in hours
+          example: 2

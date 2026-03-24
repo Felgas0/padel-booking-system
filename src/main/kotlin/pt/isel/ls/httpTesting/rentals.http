@@ -1,0 +1,71 @@
+
+// ########################################################
+@baseUrl = http://localhost:8080
+@authToken = 00000000-0000-0000-0000-000000000001
+// ########################################################
+
+### BOOKING A SPECIFIC HOUR(S) OF A COURT
+POST {{baseUrl}}/rentals
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "clubId": 1,
+  "courtId": 1,
+  "date": "2025-04-23T20:00:00",
+  "duration": 2
+}
+
+
+### DELETE RENTAL ABOVE
+DELETE {{baseUrl}}/rentals/1
+Content-Type: application/json
+Authorization: {{authToken}}
+
+### UPDATE RENTAL ABOVE
+PUT {{baseUrl}}/rentals/2
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+    "date": "2025-04-23T23:00:00",
+    "duration": 6
+}
+
+
+### GET AVAILABLE HOURS OF A COURT
+GET {{baseUrl}}/clubs/1/courts/1/available-hours?date=2025-04-23
+
+
+
+### BOOKING A SPECIFIC HOUR(S) OF A COURT (POSTGRES_DB)
+POST {{baseUrl}}/rentals
+Content-Type: application/json
+Authorization: 49698b60-12ca-4df7-8950-d783124f5fa0
+
+{
+  "clubId": 1,
+  "courtId": 1,
+  "date": "2025-05-23T10:00:00",
+  "duration": 2
+}
+
+### GET RENTAL DETAILS
+GET {{baseUrl}}/rentals/1
+
+
+### GET USER RENTALS
+GET {{baseUrl}}/users/1/rentals
+
+
+
+### GET RENTALS GIVEN PARAMETER
+GET {{baseUrl}}/clubs/1/courts/1/rentals
+
+
+### GET RENTALS FOR A COURT ON A SPECIFIC DAY
+GET {{baseUrl}}/clubs/1/courts/1/rentals?date=2025-04-23
+
+
+### GET RENTALS FOR A COURT ON A SPECIFIC DAY (POSTGRES_DB)
+GET {{baseUrl}}/clubs/1/courts/1/rentals?date=2025-08-01

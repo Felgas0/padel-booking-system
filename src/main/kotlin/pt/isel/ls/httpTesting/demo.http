@@ -1,0 +1,316 @@
+// ########################################################
+@baseUrl = http://localhost:8080
+// ########################################################
+
+### 6.1 - CREATE USER 1
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Demo Alpha User",
+  "email": "demo-user_a@isel.pt",
+  "password": "password"
+}
+> {%
+    const tok = response.body.token;
+    client.global.set("authToken", tok);
+%}
+
+
+### 6.1 - CREATE USER 2
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "User B",
+  "email": "user_b@isel.pt",
+  "password": "password"
+}
+
+### 6.2 - DUPLICATE EMAIL (should fail)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Duplicate Alpha User",
+  "email": "demo-user_a@isel.pt",
+  "password": "password"
+}
+
+### 6.3 - CREATE CLUB 1
+POST {{baseUrl}}/clubs
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "name": "Demo Club One"
+}
+
+### 6.3 - CREATE CLUB 2
+POST {{baseUrl}}/clubs
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "name": "Demo Club Two"
+}
+
+### 6.4 - ADD COURT 1 to CLUB 1
+POST {{baseUrl}}/courts
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "name": "Court Alpha",
+  "clubId": 1
+}
+
+### 6.4 - ADD COURT 2 to CLUB 1
+POST {{baseUrl}}/courts
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "name": "Court Beta",
+  "clubId": 1
+}
+
+### 6.5 - LIST COURTS OF CLUB 1
+GET {{baseUrl}}/clubs/1/courts
+
+### 6.5 - LIST COURTS OF CLUB 2
+GET {{baseUrl}}/clubs/2/courts
+
+### 6.6 - LIST AVAILABLE HOURS FOR COURT 1 (today)
+GET {{baseUrl}}/clubs/1/courts/1/available-hours?date=2025-06-23
+
+### 6.7 - CREATE RENTAL WITH INVALID DATE (past date)
+POST {{baseUrl}}/rentals
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "clubId": 1,
+  "courtId": 1,
+  "date": "2022-01-01T10:00:00",
+  "duration": 2
+}
+
+### 6.8 - CREATE RENTAL 1 (valid)
+POST {{baseUrl}}/rentals
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "clubId": 1,
+  "courtId": 1,
+  "date": "2025-08-23T18:00:00",
+  "duration": 2
+}
+
+### 6.8 - CREATE RENTAL 2 (valid)
+POST {{baseUrl}}/rentals
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "clubId": 1,
+  "courtId": 1,
+  "date": "2025-08-23T20:00:00",
+  "duration": 2
+}
+
+### 6.8 - CREATE RENTAL 3 (valid)
+POST {{baseUrl}}/rentals
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "clubId": 1,
+  "courtId": 1,
+  "date": "2025-08-23T22:00:00",
+  "duration": 2
+}
+
+### 6.9 - LIST AVAILABLE HOURS FOR COURT 1 (today)
+GET {{baseUrl}}/clubs/1/courts/1/available-hours?date=2025-08-23
+
+### 6.10 - LIST RENTALS FOR COURT 1 (today)
+GET {{baseUrl}}/clubs/1/courts/1/rentals?date=2025-08-23
+
+### 6.11 - GET RENTAL DETAILS (rental ID 1)
+GET {{baseUrl}}/rentals/1
+
+### 6.12 - LIST RENTALS PAGE 1 (limit 2)
+GET {{baseUrl}}/users/1/rentals?skip=0&limit=2
+
+### 6.12 - LIST RENTALS PAGE 2 (limit 2)
+GET {{baseUrl}}/users/1/rentals?skip=2&limit=2
+
+### 6.13 - DELETE RENTAL ID 1
+DELETE {{baseUrl}}/rentals/1
+Content-Type: application/json
+Authorization: {{authToken}}
+
+### 6.14 - TRY TO GET DELETED RENTAL (should fail)
+GET {{baseUrl}}/rentals/1
+
+
+
+### 6.15 - PARCIAL SEARCH: demo
+GET {{baseUrl}}/clubs/search?name=demo&skip=0&limit=5
+
+
+### 6.16 - PARCIAL SEARCH: demo (skip first)
+GET {{baseUrl}}/clubs/search?name=demo&skip=1&limit=5
+
+
+### 6.17 – PARCIAL SEARCH Demo Club t - usar "20%" como space
+GET {{baseUrl}}/clubs/search?name=Demo%20Club%20t&skip=0&limit=5
+
+
+### 6.18 - PARCIAL SEARCH demo club o - "+" como space
+GET {{baseUrl}}/clubs/search?name=demo+club+o&skip=0&limit=5
+
+
+
+### 6.19 - PARCIAL SEARCH: b
+GET {{baseUrl}}/clubs/search?name=b&skip=0&limit=5
+
+
+### 6.20 - CREATE CLUB THAT ALREADY EXISTS
+POST {{baseUrl}}/clubs
+Content-Type: application/json
+Authorization: 0fa9c53c-7ac8-45c1-8e3d-36834fe3cd41
+
+{
+  "name": "Benfica"
+}
+
+### 6.21 - LOGIN COM USER 1 (sucesso)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "name": "Demo Alpha User",
+  "password": "password"
+}
+> {%
+    const tok = response.body.token;
+    client.global.set("authToken", tok);
+%}
+
+### 6.21.2 - LOGIN COM USER 2 (sucesso)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "name": "User B",
+  "password": "password"
+}
+
+### 6.22 - LOGIN COM PASSWORD ERRADA (deve falhar)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "name": "Demo Alpha User",
+  "password": "wrong-password"
+}
+
+### 6.23 - LOGIN COM NOME INEXISTENTE (deve falhar)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "name": "Nome Inexistente",
+  "password": "password"
+}
+
+
+### 6.24 - UPDATE RENTAL (valid update)
+PUT {{baseUrl}}/rentals/2
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "date": "2025-06-24T18:00:00",
+  "duration": 1
+}
+
+### 6.25 - UPDATE RENTAL (conflict with existing rental)
+PUT {{baseUrl}}/rentals/3
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "date": "2025-06-24T18:00:00",
+  "duration": 2
+}
+
+### 6.26 - UPDATE RENTAL (nonexistent rental)
+PUT {{baseUrl}}/rentals/9999
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "date": "2025-06-24T14:00:00",
+  "duration": 1
+}
+
+### 6.27 - UPDATE RENTAL (past date)
+PUT {{baseUrl}}/rentals/2
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "date": "2023-01-01T10:00:00",
+  "duration": 1
+}
+
+### 6.28 - UPDATE RENTAL (missing fields)
+PUT {{baseUrl}}/rentals/2
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "duration": 2
+}
+
+### 6.29
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "aaaaaaaaaaa",
+  "email": "a@sdad",
+  "password": "password"
+}
+
+
+
+### 6.30
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "bbbbbbbbbbbb",
+  "email": "asdads",
+  "password": "password"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
