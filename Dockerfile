@@ -4,13 +4,12 @@ WORKDIR /usr/app
 
 COPY src ./src
 COPY static-content ./static-content
-COPY gradle ./gradle
+# COPY gradle ./gradle  <-- REMOVE THIS LINE
 COPY build.gradle.kts ./
 COPY settings.gradle.kts ./
 
 RUN gradle build && gradle jar
 
-# Swapped deprecated openjdk:21 for an actively maintained JRE
 FROM eclipse-temurin:21-jre
 
 WORKDIR /usr/app
