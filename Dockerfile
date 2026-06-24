@@ -10,7 +10,8 @@ COPY settings.gradle.kts ./
 
 RUN gradle build && gradle jar
 
-FROM openjdk:21
+# Swapped deprecated openjdk:21 for an actively maintained JRE
+FROM eclipse-temurin:21-jre
 
 WORKDIR /usr/app
 COPY --from=build /usr/app/ .
